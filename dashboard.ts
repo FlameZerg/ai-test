@@ -34,11 +34,6 @@ async function initializeMapping() {
     return model;
   }
 
-  function generateProjectSlug(folderName: string, model: string): string {
-    // Extract variant from folder name (e.g., "anti", "anti2", "wrap", "wrap2", etc.)
-    const parts = folderName.replace('global-sales-', '').replace('-' + model, '');
-    return parts || 'default';
-  }
 
   for (const project of allProjects) {
     const model = extractModel(project);
@@ -154,13 +149,11 @@ async function handler(req: Request): Promise<Response> {
       <div class="category">
         <h2 class="category-title">${formatModelName(model)}</h2>
         <div class="grid">
-          ${projectMapping[model].map((project, projIdx) => {
-            const slug = generateProjectSlug(project, model);
-            return `
+          ${projectMapping[model].map((project, projIdx) => `
             <div class="card">
-              <a href="/${formatModelName(model)}/${slug}/" class="project-link">Open</a>
+              <a href="/${formatModelName(model)}/${projIdx}/" class="project-link">Open</a>
             </div>
-          `}).join("")}
+          `).join("")}
         </div>
       </div>
     `).join("")}
@@ -184,33 +177,24 @@ async function handler(req: Request): Promise<Response> {
     return model;
   }
 
-  function generateProjectSlug(folderName: string, model: string): string {
-    const parts = folderName.replace('global-sales-', '').replace('-' + model, '');
-    return parts || 'default';
-  }
-
-  // Match formatted model names and slugs in URL
+  // Match formatted model names and numeric indexes in URL
   const pathParts = url.pathname.split('/').filter(p => p);
   if (pathParts.length >= 2) {
     const urlModel = pathParts[0];
-    const urlSlug = pathParts[1];
+    const projectIndex = parseInt(pathParts[1]);
     const subPath = '/' + pathParts.slice(2).join('/');
     
-    // Find matching model and project
+    // Find matching model and project by index
     for (const [model, projects] of Object.entries(projectMapping)) {
-      if (formatModelName(model) === urlModel) {
-        for (const project of projects) {
-          const slug = generateProjectSlug(project, model);
-          if (slug === urlSlug) {
-            const newUrl = new URL(req.url);
-            newUrl.pathname = `/${project}${subPath || '/'}`;
-            
-            return serveDir(new Request(newUrl, req), {
-              fsRoot: ".",
-              showDirListing: false,
-            });
-          }
-        }
+      if (formatModelName(model) === urlModel && !isNaN(projectIndex) && projectIndex < projects.length) {
+        const actualProject = projects[projectIndex];
+        const newUrl = new URL(req.url);
+        newUrl.pathname = `/${actualProject}${subPath || '/'}`;
+        
+        return serveDir(new Request(newUrl, req), {
+          fsRoot: ".",
+          showDirListing: false,
+        });
       }
     }
   }
