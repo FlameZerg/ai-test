@@ -44,7 +44,7 @@ async function handler(req: Request): Promise<Response> {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Project Dashboard</title>
+  <title>Global Sales Project Dashboard</title>
   <style>
     :root {
       --bg-color: #f0f2f5;
@@ -89,12 +89,12 @@ async function handler(req: Request): Promise<Response> {
       background: var(--card-bg);
       border-radius: 12px;
       box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-      padding: 24px;
+      padding: 20px;
       transition: transform 0.2s, box-shadow 0.2s;
       display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      min-height: 120px;
+      align-items: center;
+      justify-content: center;
+      min-height: 80px;
     }
     .card:hover {
       transform: translateY(-4px);
@@ -108,16 +108,16 @@ async function handler(req: Request): Promise<Response> {
       color: #555;
     }
     .project-link {
-      display: inline-block;
+      display: block;
       text-decoration: none;
       color: white;
       background-color: var(--accent-color);
-      padding: 8px 16px;
+      padding: 12px 24px;
       border-radius: 6px;
       text-align: center;
       font-weight: 500;
-      margin-top: auto;
-      font-size: 0.9rem;
+      font-size: 1rem;
+      width: 100%;
     }
     .project-link:hover {
       background-color: #0051a2;
@@ -126,14 +126,13 @@ async function handler(req: Request): Promise<Response> {
 </head>
 <body>
   <div class="container">
-    <h1>Project Dashboard</h1>
+    <h1>Global Sales Project Dashboard</h1>
     ${sortedModels.map(model => `
       <div class="category">
         <h2 class="category-title">${model}</h2>
         <div class="grid">
           ${projectsByModel[model].map(project => `
             <div class="card">
-              <div class="project-name">${project}</div>
               <a href="/${project}/" class="project-link">Open</a>
             </div>
           `).join("")}
