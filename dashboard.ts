@@ -25,6 +25,15 @@ async function initializeMapping() {
     return null;
   }
 
+  function formatModelName(model: string): string {
+    if (model === "gemini3pro") return "Gemini3pro";
+    if (model === "claude4.5thinking") return "Claude4.5thinking";
+    if (model === "glm4.6") return "GLM4.6";
+    if (model === "gptoss120B") return "GPTOSS120B";
+    if (model === "gpt5.1medium") return "GPT5.1medium";
+    return model;
+  }
+
   for (const project of allProjects) {
     const model = extractModel(project);
     if (model) {
@@ -137,11 +146,11 @@ async function handler(req: Request): Promise<Response> {
     <h1>Global Sales Project Dashboard</h1>
     ${sortedModels.map((model, modelIdx) => `
       <div class="category">
-        <h2 class="category-title">${model}</h2>
+        <h2 class="category-title">${formatModelName(model)}</h2>
         <div class="grid">
           ${projectMapping[model].map((project, projIdx) => `
             <div class="card">
-              <a href="/p/${modelIdx}-${projIdx}/" target="_blank" class="project-link">Open</a>
+              <a href="/${formatModelName(model)}/" class="project-link">Open</a>
             </div>
           `).join("")}
         </div>
@@ -157,24 +166,34 @@ async function handler(req: Request): Promise<Response> {
     });
   }
 
-  // Handle project routes with obfuscated paths
-  const pathMatch = url.pathname.match(/^\/p\/(\d+)-(\d+)(\/.*)$/);
-  if (pathMatch) {
-    const modelIdx = parseInt(pathMatch[1]);
-    const projIdx = parseInt(pathMatch[2]);
-    const subPath = pathMatch[3];
+  // Handle project routes with model names
+  function formatModelName(model: string): string {
+    if (model === "gemini3pro") return "Gemini3pro";
+    if (model === "claude4.5thinking") return "Claude4.5thinking";
+    if (model === "glm4.6") return "GLM4.6";
+    if (model === "gptoss120B") return "GPTOSS120B";
+    if (model === "gpt5.1medium") return "GPT5.1medium";
+    return model;
+  }
+
+  // Match formatted model names in URL
+  const pathParts = url.pathname.split('/').filter(p => p);
+  if (pathParts.length > 0) {
+    const urlModel = pathParts[0];
+    const subPath = '/' + pathParts.slice(1).join('/');
     
-    const sortedModels = Object.keys(projectMapping).sort();
-    const model = sortedModels[modelIdx];
-    if (model && projectMapping[model][projIdx]) {
-      const actualProject = projectMapping[model][projIdx];
-      const newUrl = new URL(req.url);
-      newUrl.pathname = `/${actualProject}${subPath}`;
-      
-      return serveDir(new Request(newUrl, req), {
-        fsRoot: ".",
-        showDirListing: false,
-      });
+    // Find matching model
+    for (const [model, projects] of Object.entries(projectMapping)) {
+      if (formatModelName(model) === urlModel && projects.length > 0) {
+        const actualProject = projects[0]; // Use first project of this model
+        const newUrl = new URL(req.url);
+        newUrl.pathname = `/${actualProject}${subPath || '/'}`;
+        
+        return serveDir(new Request(newUrl, req), {
+          fsRoot: ".",
+          showDirListing: false,
+        });
+      }
     }
   }
 
