@@ -116,6 +116,7 @@ async function handler(req: Request): Promise<Response> {
     }
     .project-link {
       display: block;
+      text-decoration: none;
       color: white;
       background-color: var(--accent-color);
       padding: 12px 24px;
@@ -124,8 +125,6 @@ async function handler(req: Request): Promise<Response> {
       font-weight: 500;
       font-size: 1rem;
       width: 100%;
-      border: none;
-      cursor: pointer;
       transition: background-color 0.2s;
     }
     .project-link:hover {
@@ -142,33 +141,13 @@ async function handler(req: Request): Promise<Response> {
         <div class="grid">
           ${projectMapping[model].map((project, projIdx) => `
             <div class="card">
-              <button onclick="loadProject(${modelIdx}, ${projIdx})" class="project-link">Open</button>
+              <a href="/p/${modelIdx}-${projIdx}/" target="_blank" class="project-link">Open</a>
             </div>
           `).join("")}
         </div>
       </div>
     `).join("")}
   </div>
-  <div id="project-viewer" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000;">
-    <div style="position: absolute; top: 10px; right: 10px; z-index: 1001;">
-      <button onclick="closeProject()" style="padding: 10px 20px; background: #ff4444; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500;">Close</button>
-    </div>
-    <iframe id="project-frame" style="width: 100%; height: 100%; border: none;"></iframe>
-  </div>
-  <script>
-    function loadProject(modelIdx, projIdx) {
-      const frame = document.getElementById('project-frame');
-      frame.src = '/p/' + modelIdx + '-' + projIdx + '/';
-      document.getElementById('project-viewer').style.display = 'block';
-      document.body.style.overflow = 'hidden';
-    }
-    
-    function closeProject() {
-      document.getElementById('project-viewer').style.display = 'none';
-      document.getElementById('project-frame').src = '';
-      document.body.style.overflow = 'auto';
-    }
-  </script>
 </body>
 </html>
     `;
